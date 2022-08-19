@@ -5,21 +5,21 @@ import static io.opsit.explang.Utils.coalesce;
 import io.opsit.explang.ASTN;
 import io.opsit.explang.ASTNList;
 import io.opsit.explang.Backtrace;
+import io.opsit.explang.CompilationException;
 import io.opsit.explang.Compiler;
 import io.opsit.explang.Compiler.ICtx;
+import io.opsit.explang.ExecutionException;
 import io.opsit.explang.ICompiled;
+import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.IParser;
+import io.opsit.explang.IREPL;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.Utils;
-import io.opsit.explang.IREPL;
-import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.autosuggest.IAutoSuggester;
 import io.opsit.explang.autosuggest.SourceInfo;
 import io.opsit.explang.autosuggest.Suggestion;
 import io.opsit.explang.autosuggest.Tokenization;
 import io.opsit.explang.strconv.alg.AlgConverter;
-import io.opsit.explang.CompilationException;
-import io.opsit.explang.ExecutionException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -40,9 +40,9 @@ public class AlgJlineREPL implements IREPL {
   protected boolean lineMode = false;
   protected Compiler compiler;
   protected IParser parser;
-  
+
   Compiler.ICtx replCtx;
-  
+
   public Compiler getCompiler() {
     return this.compiler;
   }
@@ -121,7 +121,8 @@ public class AlgJlineREPL implements IREPL {
     return new AParsedLine(line, cursor, "", 0, 0, new ArrayList<String>());
   }
 
-  public ParsedLine parseForCompletion(final String line, final int cursor) {
+  
+  protected ParsedLine parseForCompletion(final String line, final int cursor) {
     debug("completeParsedLine line='" + line + "' cursor=" + cursor);
     IParser explangParser = compiler.getParser();
     if (explangParser instanceof IAutoSuggester) {
@@ -318,7 +319,6 @@ public class AlgJlineREPL implements IREPL {
         public String writeObject(Object obj) {
           return Utils.asString(obj);
         }
-        ;
       };
 
   @Override
@@ -331,7 +331,7 @@ public class AlgJlineREPL implements IREPL {
     return this.writer;
   }
 
-    @Override
+  @Override
   public boolean getLineMode() {
     return lineMode;
   }

@@ -12,6 +12,9 @@ public class AParsedLine implements ParsedLine {
   int wordIndex;
   List<String> words;
 
+  /**
+   * Construct parsed line given member variables.
+   */
   public AParsedLine(
       String line, int cursor, String word, int wordCursor, int wordIndex, List<String> words) {
     this.line = line;
@@ -21,6 +24,9 @@ public class AParsedLine implements ParsedLine {
     this.wordIndex = wordIndex;
   }
 
+  /**
+   * Construct parsed line given Tokenization structure.
+   */
   public AParsedLine(String line, int cursor, Tokenization tkz) {
     this.line = line;
     this.cursor = cursor;

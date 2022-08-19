@@ -1,16 +1,12 @@
 package io.opsit.explang.jlinerepl;
 
-
-import io.opsit.explang.Main;
-import io.opsit.explang.IREPL;
 import io.opsit.explang.IParser;
+import io.opsit.explang.IREPL;
+import io.opsit.explang.Main;
 import io.opsit.explang.parser.alg.AlgParser;
 
-
 public class JLineMain extends Main {
-  /**
-   * Standalone interpreter entry point.
-   */
+  /** Standalone interpreter entry point. */
   public static void main(String[] argv) throws Exception {
     JLineMain main = new JLineMain();
     main.getParsers().add(0, "alg");
@@ -26,5 +22,3 @@ public class JLineMain extends Main {
     }
   }
 }
-
-

@@ -3,8 +3,11 @@ package io.opsit.explang.jlinerepl;
 import io.opsit.explang.ASTN;
 import io.opsit.explang.ASTNList;
 import io.opsit.explang.Backtrace;
+import io.opsit.explang.CompilationException;
 import io.opsit.explang.Compiler;
 import io.opsit.explang.Compiler.ICtx;
+import io.opsit.explang.ExecutionException;
+// import io.opsit.explang.
 import io.opsit.explang.ICompiled;
 import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.IParser;
@@ -12,9 +15,6 @@ import io.opsit.explang.IREPL;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.ParserEOFException;
 import io.opsit.explang.Utils;
-import io.opsit.explang.CompilationException;
-import io.opsit.explang.ExecutionException;
-//import io.opsit.explang.
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class JlineREPL implements IREPL {
     this.lineMode = lineMode;
   }
 
-  public class JLineParser implements Parser  {
+  public class JLineParser implements Parser {
     // @Override
     // public boolean isEscapeChar(char c)) {
     //    return false;
@@ -175,7 +175,7 @@ public class JlineREPL implements IREPL {
     };
   }
 
-  public ParsedLine completeParsedLine(final String line, final int cursor, ASTNList exprs) {
+  protected ParsedLine completeParsedLine(final String line, final int cursor, ASTNList exprs) {
 
     return new ParsedLine() {
       @Override
@@ -280,9 +280,9 @@ public class JlineREPL implements IREPL {
             + compiler.getPackages()
             + "\n"
             + "Please type an EXPLANG expression\n"
-            + (getLineMode() ? "Warning: linemode that was requested is not supported by JLineREPL\n" :  ""));
-
-    
+            + (getLineMode()
+                ? "Warning: linemode that was requested is not supported by JLineREPL\n"
+                : ""));
 
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
