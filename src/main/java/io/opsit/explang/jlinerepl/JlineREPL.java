@@ -7,11 +7,14 @@ import io.opsit.explang.Compiler;
 import io.opsit.explang.Compiler.ICtx;
 import io.opsit.explang.ICompiled;
 import io.opsit.explang.IParser;
+import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.ParserEOFException;
 import io.opsit.explang.Utils;
+import io.opsit.explang.IREPL;
 import io.opsit.explang.parser.lisp.LispParser;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import org.jline.reader.Candidate;
@@ -27,6 +30,50 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 public class JlineREPL implements IREPL {
+  protected boolean verbose = false;
+  protected boolean lineMode = false;
+  protected Compiler compiler;
+  protected IParser parser;
+
+  @Override
+  public void setVerbose(boolean val) {
+    this.verbose = val;
+  }
+
+  @Override
+  public boolean getVerbose() {
+    return this.verbose;
+  }
+
+  public Compiler getCompiler() {
+    return this.compiler;
+  }
+
+  public void setCompiler(Compiler compiler) {
+    this.compiler = compiler;
+  }
+
+  @Override
+  public void setParser(IParser parser) {
+    this.parser = parser;
+  }
+
+  @Override
+  public IParser getParser() {
+    return this.parser;
+  }
+
+  @Override
+  public boolean getLineMode() {
+    return lineMode;
+  }
+
+  @Override
+  public void setLineMode(boolean lineMode) {
+    this.lineMode = lineMode;
+  }
+
+  
   public class JLineParser implements Parser {
     // @Override
     // public boolean isEscapeChar(char c)) {
@@ -172,8 +219,6 @@ public class JlineREPL implements IREPL {
         }
       };
 
-  protected boolean verbose = false;
-
   @Override
   public void setObjectWriter(IObjectWriter writer) {
     this.writer = writer;
@@ -184,20 +229,7 @@ public class JlineREPL implements IREPL {
     return this.writer;
   }
 
-  @Override
-  public void setVerbose(boolean val) {
-    this.verbose = val;
-  }
 
-  protected Compiler compiler;
-
-  public Compiler getCompiler() {
-    return this.compiler;
-  }
-
-  public void setCompiler(Compiler compiler) {
-    this.compiler = compiler;
-  }
 
   public JlineREPL() {
     compiler = new Compiler(Compiler.getAllPackages());
@@ -205,7 +237,7 @@ public class JlineREPL implements IREPL {
   }
 
   @Override
-  public Object execute(IParser parser) throws IOException {
+  public Object execute(Reader inReader, String inputName) throws IOException {
     Object result = null;
     ICtx ctx = compiler.newCtx();
     // IParser parser = compiler.getParser();

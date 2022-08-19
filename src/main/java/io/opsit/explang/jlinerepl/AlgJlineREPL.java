@@ -11,12 +11,15 @@ import io.opsit.explang.ICompiled;
 import io.opsit.explang.IParser;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.Utils;
+import io.opsit.explang.IREPL;
+import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.autosuggest.IAutoSuggester;
 import io.opsit.explang.autosuggest.SourceInfo;
 import io.opsit.explang.autosuggest.Suggestion;
 import io.opsit.explang.autosuggest.Tokenization;
 import io.opsit.explang.strconv.alg.AlgConverter;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +34,13 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 public class AlgJlineREPL implements IREPL {
-  ICtx replCtx;
-  Compiler compiler;
   protected boolean verbose = false;
-
+  protected boolean lineMode = false;
+  protected Compiler compiler;
+  protected IParser parser;
+  
+  Compiler.ICtx replCtx;
+  
   public Compiler getCompiler() {
     return this.compiler;
   }
@@ -131,14 +137,19 @@ public class AlgJlineREPL implements IREPL {
     this.verbose = val;
   }
 
+  @Override
+  public boolean getVerbose() {
+    return this.verbose;
+  }
+
   public AlgJlineREPL() {
     compiler = new Compiler(new AlgConverter(), Compiler.getAllPackages());
   }
 
   @Override
-  public Object execute(IParser parser) throws IOException {
+  public Object execute(Reader inReader, String inputName) throws IOException {
     Object result = null;
-    replCtx = compiler.newCtx();
+    Compiler.ICtx replCtx = compiler.newCtx();
     compiler.setParser(parser);
     ParseCtx pctx = new ParseCtx("INPUT");
     Parser jlparser = new JLineParser();
@@ -299,4 +310,26 @@ public class AlgJlineREPL implements IREPL {
   public IObjectWriter getObjectWriter() {
     return this.writer;
   }
+
+    @Override
+  public boolean getLineMode() {
+    return lineMode;
+  }
+
+  @Override
+  public void setLineMode(boolean lineMode) {
+    this.lineMode = lineMode;
+  }
+
+  @Override
+  public void setParser(IParser parser) {
+    this.parser = parser;
+  }
+
+  @Override
+  public IParser getParser() {
+    return this.parser;
+  }
+
+
 }

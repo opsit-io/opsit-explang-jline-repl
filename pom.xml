@@ -4,7 +4,7 @@
   <artifactId>opsit-explang-jline-repl</artifactId>
   <version>0.0.2-SNAPSHOT</version>
 
-  <name>Opsit Explang Algebraic Syntax Parser</name>
+  <name>Opsit Explang JLine REPL</name>
   <description>JLine base REPL for Explang</description>
   <url>https://github.com/opsit-io/opsit-explang-jline-repl</url>
 
@@ -131,7 +131,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
-                    <Main-Class>io.opsit.explang.jlinerepl.JLineREPL</Main-Class>
+                    <Main-Class>io.opsit.explang.jlinerepl.JLineMain</Main-Class>
                   </manifestEntries>
                 </transformer>
               </transformers>
@@ -148,7 +148,7 @@
             <index>true</index>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>io.opsit.explang.jlinerepl.JLineREPL</mainClass>
+              <mainClass>io.opsit.explang.jlinerepl.JLineMain</mainClass>
             </manifest>
           </archive>
         </configuration>
