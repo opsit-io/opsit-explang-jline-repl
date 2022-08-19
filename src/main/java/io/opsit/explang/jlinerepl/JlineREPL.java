@@ -306,6 +306,11 @@ public class JlineREPL implements IREPL {
           if (verbose) {
             System.err.println("\nAST:\n" + exprASTN + "\n------\n");
           }
+          if (exprASTN.hasProblems()) {
+            System.out.println("Failed to parse expression:");
+            System.out.print(listParseErrors(exprASTN));
+            break;
+          }
           ICompiled expr = compiler.compile(exprASTN);
           if (verbose) {
             System.err.println("compiled:\n" + expr + "\n------\n");
@@ -334,5 +339,22 @@ public class JlineREPL implements IREPL {
       }
     }
     return result;
+  }
+
+  private String listParseErrors(ASTN exprASTN) {
+    final StringBuilder buf = new StringBuilder();
+    ASTN.Walker errCollector =
+        new ASTN.Walker() {
+          public void walk(ASTN node) {
+            final Exception ex = node.getProblem();
+            if (null != ex) {
+              buf.append(node.getPctx());
+              buf.append(": ");
+              buf.append(ex.getMessage()).append("\n");
+            }
+          }
+        };
+    exprASTN.dispatchWalker(errCollector);
+    return buf.toString();
   }
 }
