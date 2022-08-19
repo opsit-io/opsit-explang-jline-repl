@@ -18,6 +18,8 @@ import io.opsit.explang.autosuggest.SourceInfo;
 import io.opsit.explang.autosuggest.Suggestion;
 import io.opsit.explang.autosuggest.Tokenization;
 import io.opsit.explang.strconv.alg.AlgConverter;
+import io.opsit.explang.CompilationException;
+import io.opsit.explang.ExecutionException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -213,6 +215,11 @@ public class AlgJlineREPL implements IREPL {
           if (verbose) {
             debug("\nAST:\n" + exprASTN + "\n------\n");
           }
+          if (exprASTN.hasProblems()) {
+            System.out.println("Failed to parse expression:");
+            System.out.print(listParseErrors(exprASTN));
+            break;
+          }
           if (null == exprASTN) {
             result = null;
           } else {
@@ -237,9 +244,22 @@ public class AlgJlineREPL implements IREPL {
           }
           // kluge off
         }
+      } catch (CompilationException ex) {
+        System.err.println("COMPILATION ERROR: " + ex.getMessage());
+      } catch (ExecutionException ex) {
+        System.err.print("EXECUTION ERROR: " + ex.getMessage());
+        if (null != ex.getBacktrace()) {
+          System.err.println(" at:\n" + ex.getBacktrace());
+        } else {
+          System.err.println();
+        }
+      } catch (RuntimeException ex) {
+        System.err.println("RUNTIME EXCEPTION: " + ex);
+      } catch (Exception ex) {
+        System.err.println("EXCEPTION: " + ex);
       } catch (Throwable e) {
         e.printStackTrace();
-      } 
+      }
     }
     return result;
   }
@@ -331,5 +351,20 @@ public class AlgJlineREPL implements IREPL {
     return this.parser;
   }
 
-
+  private String listParseErrors(ASTN exprASTN) {
+    final StringBuilder buf = new StringBuilder();
+    ASTN.Walker errCollector =
+        new ASTN.Walker() {
+          public void walk(ASTN node) {
+            final Exception ex = node.getProblem();
+            if (null != ex) {
+              buf.append(node.getPctx());
+              buf.append(": ");
+              buf.append(ex.getMessage()).append("\n");
+            }
+          }
+        };
+    exprASTN.dispatchWalker(errCollector);
+    return buf.toString();
+  }
 }
