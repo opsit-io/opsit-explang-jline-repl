@@ -12,6 +12,9 @@ import io.opsit.explang.IREPL;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.ParserEOFException;
 import io.opsit.explang.Utils;
+import io.opsit.explang.CompilationException;
+import io.opsit.explang.ExecutionException;
+//import io.opsit.explang.
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -21,7 +24,6 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
-//import org.jline.reader.CompletingParsedLine;
 import org.jline.reader.Parser.ParseContext;
 import org.jline.reader.SyntaxError;
 import org.jline.terminal.Terminal;
@@ -314,6 +316,19 @@ public class JlineREPL implements IREPL {
           }
           terminal.writer().println(writer.writeObject(result));
         }
+      } catch (CompilationException ex) {
+        System.err.println("COMPILATION ERROR: " + ex.getMessage());
+      } catch (ExecutionException ex) {
+        System.err.print("EXECUTION ERROR: " + ex.getMessage());
+        if (null != ex.getBacktrace()) {
+          System.err.println(" at:\n" + ex.getBacktrace());
+        } else {
+          System.err.println();
+        }
+      } catch (RuntimeException ex) {
+        System.err.println("RUNTIME EXCEPTION: " + ex);
+      } catch (Exception ex) {
+        System.err.println("EXCEPTION: " + ex);
       } catch (Throwable e) {
         e.printStackTrace();
       }
