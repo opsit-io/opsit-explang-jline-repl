@@ -6,24 +6,22 @@ import io.opsit.explang.Backtrace;
 import io.opsit.explang.Compiler;
 import io.opsit.explang.Compiler.ICtx;
 import io.opsit.explang.ICompiled;
-import io.opsit.explang.IParser;
 import io.opsit.explang.IObjectWriter;
+import io.opsit.explang.IParser;
+import io.opsit.explang.IREPL;
 import io.opsit.explang.ParseCtx;
 import io.opsit.explang.ParserEOFException;
 import io.opsit.explang.Utils;
-import io.opsit.explang.IREPL;
-import io.opsit.explang.parser.lisp.LispParser;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import org.jline.reader.Candidate;
-import org.jline.reader.Completer;
 import org.jline.reader.EOFError;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
+//import org.jline.reader.CompletingParsedLine;
 import org.jline.reader.Parser.ParseContext;
 import org.jline.reader.SyntaxError;
 import org.jline.terminal.Terminal;
@@ -73,8 +71,7 @@ public class JlineREPL implements IREPL {
     this.lineMode = lineMode;
   }
 
-  
-  public class JLineParser implements Parser {
+  public class JLineParser implements Parser  {
     // @Override
     // public boolean isEscapeChar(char c)) {
     //    return false;
@@ -196,7 +193,7 @@ public class JlineREPL implements IREPL {
 
       @Override
       public List<String> words() {
-        return Utils.list("foo", "bar");
+        return Utils.list();
       }
 
       @Override
@@ -229,15 +226,9 @@ public class JlineREPL implements IREPL {
     return this.writer;
   }
 
-
-
-  public JlineREPL() {
-    compiler = new Compiler(Compiler.getAllPackages());
-    compiler.setParser(new LispParser());
-  }
-
   @Override
   public Object execute(Reader inReader, String inputName) throws IOException {
+    System.setProperty(LineReader.PROP_SUPPORT_PARSEDLINE, "true");
     Object result = null;
     ICtx ctx = compiler.newCtx();
     // IParser parser = compiler.getParser();
@@ -247,25 +238,27 @@ public class JlineREPL implements IREPL {
 
     Terminal terminal = TerminalBuilder.builder().system(true).build();
 
-    Completer completer =
-        new Completer() {
+    // Completer completer =
+    //     new Completer() {
 
-          @Override
-          public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
-            // System.out.println("candidates: "+candidates);
-            // new Candidate(String value, String displ, String group, String descr, String suffix,
-            // String key, boolean complete)
-            Candidate c =
-                new Candidate("foo", "Do fooo", "funcs", "DO FOO DESCR", null, "foo", true);
-            Candidate c2 = new Candidate("bar");
-            candidates.add(c);
-            candidates.add(c2);
-          }
-        };
+    //       @Override
+    //       public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+    //         // System.out.println("candidates: "+candidates);
+    //         // new Candidate(String value, String displ, String group, String descr, String
+    // suffix,
+    //         // String key, boolean complete)
+    //         /*Candidate c =
+    //             new Candidate("foo", "Do fooo", "funcs", "DO FOO DESCR", null, "foo", true);
+    //             Candidate c2 = new Candidate("bar");
+    //             candidates.add(c);
+    //             candidates.add(c2);
+    //         */
+    //       }
+    //     };
     LineReader reader =
         LineReaderBuilder.builder()
             .terminal(terminal)
-            .completer(completer)
+            // .completer(completer)
             .parser(jlparser)
             /// .variable(LineReader., "%M%P > ")
             .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ")
@@ -276,15 +269,18 @@ public class JlineREPL implements IREPL {
             // .option(LineReader.Option.INSERT_BRACKET, true)
             .option(LineReader.Option.INSERT_TAB, true)
             .build();
+    System.out.print(
+        "Welcome to the EXPLANG JLine REPL!\n"
+            + "Active parser is "
+            + parser.getClass().getSimpleName()
+            + "\n"
+            + "Loaded packages are: "
+            + compiler.getPackages()
+            + "\n"
+            + "Please type an EXPLANG expression\n"
+            + (getLineMode() ? "Warning: linemode that was requested is not supported by JLineREPL\n" :  ""));
 
-    // Map<String, CmdDesc> tailTips = new HashMap<String, CmdDesc>();
-    // tailTips.put("foo", new CmdDesc(ArgDesc.doArgNames(Arrays.asList("param1", "param2",
-    // "[paramN...]"))));
-    // tailTips.put("bar", new CmdDesc(ArgDesc.doArgNames(Arrays.asList("param1", "param2",
-    // "[paramN...]"))));
-
-    // Object commandDescription;
-    // TailTipWidgets tailtipWidgets = new TailTipWidgets(reader, tailTips, 5, TipType.COMPLETER);
+    
 
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
@@ -320,7 +316,7 @@ public class JlineREPL implements IREPL {
         }
       } catch (Throwable e) {
         e.printStackTrace();
-      } 
+      }
     }
     return result;
   }
