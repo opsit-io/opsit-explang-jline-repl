@@ -92,10 +92,9 @@ public class AlgJlineREPL implements IREPL {
       //    which is used by a "%M" in a prompt pattern.
       // ParseContext.UNSPECIFIED
       return acceptParsedLine(line, cursor, exprs);
-      // throw new EOFError(pctx.getLine(), pctx.getPos(),ex.getMessage(),null,indent,")");
-      // throw new EOFError(pctx.getLine(), pctx.getPos(),ex.getMessage(),"xxxx");
     }
 
+    // FIXME
     @Override
     public boolean isEscapeChar(char ch) {
       return false;
@@ -275,17 +274,6 @@ public class AlgJlineREPL implements IREPL {
     @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
       debug("completer: reader=" + reader + ", ParsedLine=" + line + "candidates=" + candidates);
-      // System.err.println("candidates: "+candidates);
-      // new Candidate(String value, String displ, String group, String descr, String suffix, String
-      // key, boolean complete)
-      // Candidate c = new Candidate("foo", "Do fooo", "funcs", "DO FOO DESCR", null, "foo", true) ;
-      // Candidate c2 = new Candidate("bar");
-      // candidates.add(c);
-      // candidates.add(c2);
-
-      // FIXME: unused currently
-      // AsParsedLine apl = (AsParsedLine) line;
-
       IParser parser = compiler.getParser();
       if (parser instanceof IAutoSuggester) {
         debug("return autosuggester");

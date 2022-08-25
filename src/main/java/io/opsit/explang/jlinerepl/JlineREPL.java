@@ -240,30 +240,13 @@ public class JlineREPL implements IREPL {
 
     Terminal terminal = TerminalBuilder.builder().system(true).build();
 
-    // Completer completer =
-    //     new Completer() {
-
-    //       @Override
-    //       public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
-    //         // System.out.println("candidates: "+candidates);
-    //         // new Candidate(String value, String displ, String group, String descr, String
-    // suffix,
-    //         // String key, boolean complete)
-    //         /*Candidate c =
-    //             new Candidate("foo", "Do fooo", "funcs", "DO FOO DESCR", null, "foo", true);
-    //             Candidate c2 = new Candidate("bar");
-    //             candidates.add(c);
-    //             candidates.add(c2);
-    //         */
-    //       }
-    //     };
     LineReader reader =
         LineReaderBuilder.builder()
             .terminal(terminal)
             // .completer(completer)
             .parser(jlparser)
             /// .variable(LineReader., "%M%P > ")
-            .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ")
+            .variable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2)
             // .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%P %M")
             // .variable(LineReader., "%M%P > ")
             .variable(LineReader.INDENTATION, 2)
