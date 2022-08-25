@@ -73,6 +73,9 @@ public class JlineREPL implements IREPL {
     this.lineMode = lineMode;
   }
 
+  protected String prompt1 = "[%d]> ";
+  protected String prompt2 = "%P ";
+
   public class JLineParser implements Parser {
     // @Override
     // public boolean isEscapeChar(char c)) {
@@ -269,11 +272,12 @@ public class JlineREPL implements IREPL {
 
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
+    int inputnum = 0;
     while (true) {
       try {
         String line = null;
         try {
-          line = reader.readLine("[%N]> ");
+          line = reader.readLine(String.format(prompt1, inputnum++));
           if (null == line) {
             continue;
           }

@@ -51,12 +51,11 @@ public class AlgJlineREPL implements IREPL {
     this.compiler = compiler;
   }
 
-  public class JLineParser implements Parser {
-    // @Override
-    // public boolean isEscapeChar(char c)) {
-    //    return false;
-    // }
 
+  protected String prompt1 = "[%d]> ";
+  protected String prompt2 = "%P ";
+
+  public class JLineParser implements Parser {
     @Override
     public ParsedLine parse(final String line, final int cursor, final ParseContext context)
         throws SyntaxError {
@@ -169,7 +168,7 @@ public class AlgJlineREPL implements IREPL {
             .completer(completer)
             .parser(jlparser)
             /// .variable(LineReader., "%M%P > ")
-            .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M%P > ")
+            .variable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2)
             // .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%P %M")
             // .variable(LineReader., "%M%P > ")
             .variable(LineReader.INDENTATION, 2)
@@ -193,13 +192,22 @@ public class AlgJlineREPL implements IREPL {
 
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
-    System.out.println("Welcome to REPL\n");
-    System.out.println("Writer is " + this.getObjectWriter() + "\n");
+    System.out.print(""
+            + "Welcome to the EXPLANG JLine REPL!\n"
+            + "Active parser is "
+            + parser.getClass().getSimpleName()
+            + "\n"
+            + "Loaded packages are: "
+            + compiler.getPackages()
+            + "\n"
+            + "Writer is " + this.getObjectWriter() + "\n"                 
+            + "Please type an EXPLANG expression\n");
+    int inputnum = 0;
     while (true) {
       try {
         String line = null;
         try {
-          line = reader.readLine("[%N]> ");
+          line = reader.readLine(String.format(prompt1, inputnum++));
           if (null == line || line.trim().length() == 0) {
             continue;
           }
