@@ -149,6 +149,7 @@ public class AlgJlineREPL implements IREPL {
 
   @Override
   public Object execute(Reader inReader, String inputName) throws IOException {
+    System.setProperty(LineReader.PROP_SUPPORT_PARSEDLINE, "true");
     Object result = null;
     replCtx = compiler.newCtx();
     compiler.setParser(parser);
