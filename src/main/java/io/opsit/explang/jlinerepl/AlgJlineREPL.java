@@ -34,6 +34,7 @@ import org.jline.reader.Parser;
 import org.jline.reader.SyntaxError;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.reader.EOFError;
 
 public class AlgJlineREPL implements IREPL {
   protected boolean verbose = false;
@@ -55,6 +56,57 @@ public class AlgJlineREPL implements IREPL {
   protected String prompt1 = "[%d]> ";
   protected String prompt2 = "%P ";
 
+
+  private static int nwsidx(String s, int start) {
+    for (int i = start; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (!Character.isWhitespace(c)) {
+        return i;
+      }
+    }
+    return start;
+  }
+  
+  private static int bcount(String s, String[] ncb) {
+    // FIXME: not very robust or smart,
+    //        does not take in account braces inside literals
+    //        should take in account structural operators like if
+    int nlidx = s.lastIndexOf("\n")+1;
+    s = s.substring(nlidx);
+    int pos = s.length() - 1;
+    List<Character> stack = new ArrayList<Character>();
+    for (int i = pos; i >= 0; i--) {
+      char c = s.charAt(i);
+      if (c == ')' || c==']' || c=='}') {
+        stack.add(c);
+      }
+      if (c == '(' || c=='[' || c == '{') {
+        // stop on first unmatched paren
+        if (stack.isEmpty()) {
+          ncb[0] = c == '(' ? ")" : (c == '[' ? "]" : (c == '{' ? "}" : null));
+          return nwsidx(s, i + 1);
+        }
+        char p = stack.remove(stack.size() - 1);
+        // stop on first mismatched paren as well
+        //  FIXME: or it would be better to ignore it?
+        if (! ((c == '(' && p == ')') 
+               || (c == '[' && p == ']') 
+               || (c == '{' && p == '}'))) {
+          ncb[0] = ""+p;
+          return nwsidx(s, i + 1);
+        }
+      }
+    }
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (Character.isWhitespace(c)) {
+        continue;
+      }
+      return i;
+    }
+    return 0;
+  }
+  
   public class JLineParser implements Parser {
     @Override
     public ParsedLine parse(final String line, final int cursor, final ParseContext context)
@@ -80,7 +132,14 @@ public class AlgJlineREPL implements IREPL {
       }
       if (exprs.hasProblems()) {
         debug("expr has problem");
-        throw new SyntaxError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString());
+        if (line.endsWith("\n\n")) {
+          throw new SyntaxError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString());
+        } else {
+          // next closing bracket
+          String[] ncb = new String[1];
+          throw new EOFError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString(), null, bcount(line,ncb), ncb[0]);
+        }
+        //throw new SyntaxError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString());
       }
       // may return excep
       // ParseContext.ACCEPT_LINE
@@ -172,16 +231,16 @@ public class AlgJlineREPL implements IREPL {
             .variable(LineReader.SECONDARY_PROMPT_PATTERN, prompt2)
             // .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%P %M")
             // .variable(LineReader., "%M%P > ")
-            .variable(LineReader.INDENTATION, 2)
+            .variable(LineReader.INDENTATION, 1)
             .option(LineReader.Option.AUTO_GROUP, true)
             .option(LineReader.Option.GROUP, true)
             .option(LineReader.Option.GROUP_PERSIST, true)
             .option(LineReader.Option.AUTO_MENU_LIST, true)
             // .variable(LineReader.
             // .option(LineReader.Option.INSERT_BRACKET, true)
-            .option(LineReader.Option.INSERT_TAB, false)
             .build();
 
+    reader.setOpt(LineReader.Option.INSERT_TAB);
     // Map<String, CmdDesc> tailTips = new HashMap<String, CmdDesc>();
     // tailTips.put("foo", new CmdDesc(ArgDesc.doArgNames(Arrays.asList("param1", "param2",
     // "[paramN...]"))));
@@ -218,6 +277,11 @@ public class AlgJlineREPL implements IREPL {
         }
         ASTNList exprs = parser.parse(pctx, line, 1);
         if (exprs.size() == 0) {
+          continue;
+        }
+        if (exprs.hasProblems()) {
+          System.out.println("Failed to parse expression:");
+          System.out.print(listParseErrors(exprs));
           continue;
         }
         for (ASTN exprASTN : exprs) {
