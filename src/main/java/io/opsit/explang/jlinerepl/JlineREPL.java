@@ -266,10 +266,7 @@ public class JlineREPL implements IREPL {
             + compiler.getPackages()
             + "\n"
             + "Please type an EXPLANG expression\n"
-            + (getLineMode()
-                ? "Warning: linemode that was requested is not supported by JLineREPL\n"
-                : ""));
-
+            + "  <Ctrl-C> to cancel input.\n");
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
     int inputnum = 0;

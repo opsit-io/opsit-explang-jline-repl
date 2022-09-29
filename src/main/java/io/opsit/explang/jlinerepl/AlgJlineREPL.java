@@ -58,21 +58,34 @@ public class AlgJlineREPL implements IREPL {
 
 
   private static int nwsidx(String s, int start) {
-    for (int i = start; i < s.length(); i++) {
+    for (int i = start +1; i < s.length(); i++) {
       char c = s.charAt(i);
       if (!Character.isWhitespace(c)) {
         return i;
       }
     }
-    return start;
+    return start + 1;
   }
+
+  private static int llidx(String s, int idx) {
+    final int length = s.length();
+    for (int i = idx; i >= 0; i--) {
+      if (i<  length && '\n' == s.charAt(i)) {
+        return idx - i;
+      }
+    }
+    // on first line
+    return idx;
+  }
+  
   
   private static int bcount(String s, String[] ncb) {
     // FIXME: not very robust or smart,
     //        does not take in account braces inside literals
     //        should take in account structural operators like if
     int nlidx = s.lastIndexOf("\n")+1;
-    s = s.substring(nlidx);
+    // operate on the last string only
+    //s = s.substring(nlidx);
     int pos = s.length() - 1;
     List<Character> stack = new ArrayList<Character>();
     for (int i = pos; i >= 0; i--) {
@@ -84,7 +97,7 @@ public class AlgJlineREPL implements IREPL {
         // stop on first unmatched paren
         if (stack.isEmpty()) {
           ncb[0] = c == '(' ? ")" : (c == '[' ? "]" : (c == '{' ? "}" : null));
-          return nwsidx(s, i + 1);
+          return llidx(s, nwsidx(s, i));
         }
         char p = stack.remove(stack.size() - 1);
         // stop on first mismatched paren as well
@@ -93,10 +106,12 @@ public class AlgJlineREPL implements IREPL {
                || (c == '[' && p == ']') 
                || (c == '{' && p == '}'))) {
           ncb[0] = ""+p;
-          return nwsidx(s, i + 1);
+          return llidx(s, nwsidx(s, i));
         }
       }
     }
+    // find first non-whitespace character on the last line
+    s = s.substring(nlidx);
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
       if (Character.isWhitespace(c)) {
@@ -111,6 +126,7 @@ public class AlgJlineREPL implements IREPL {
     @Override
     public ParsedLine parse(final String line, final int cursor, final ParseContext context)
         throws SyntaxError {
+
       debug("ajr.parse(line='" + line + "' cursor=" + cursor + " context=" + context);
       if (ParseContext.COMPLETE == context) {
         return parseForCompletion(line, cursor);
@@ -132,7 +148,7 @@ public class AlgJlineREPL implements IREPL {
       }
       if (exprs.hasProblems()) {
         debug("expr has problem");
-        if (line.endsWith("\n\n")) {
+        if (line.endsWith("\n")) {
           throw new SyntaxError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString());
         } else {
           // next closing bracket
@@ -261,7 +277,9 @@ public class AlgJlineREPL implements IREPL {
             + compiler.getPackages()
             + "\n"
             + "Writer is " + this.getObjectWriter() + "\n"                 
-            + "Please type an EXPLANG expression\n");
+            + "Please type an EXPLANG expressions. \n"
+            + "  Press <Enter> on empty line to submit.\n"
+            + "  Press <Ctrl-C> to cancel input.\n");
     int inputnum = 0;
     while (true) {
       try {
