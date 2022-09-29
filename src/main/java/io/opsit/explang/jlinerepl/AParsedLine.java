@@ -32,7 +32,9 @@ public class AParsedLine implements ParsedLine {
     this.cursor = cursor;
     this.word = tkz.token;
     this.wordCursor = tkz.tokenPos;
-    this.wordIndex = tkz.tokenIndex;
+    if (null != tkz.tokenIndex) {
+      this.wordIndex = tkz.tokenIndex;
+    }
   }
 
   @Override
