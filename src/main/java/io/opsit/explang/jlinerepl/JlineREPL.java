@@ -7,7 +7,6 @@ import io.opsit.explang.CompilationException;
 import io.opsit.explang.Compiler;
 import io.opsit.explang.Compiler.ICtx;
 import io.opsit.explang.ExecutionException;
-// import io.opsit.explang.
 import io.opsit.explang.ICompiled;
 import io.opsit.explang.IObjectWriter;
 import io.opsit.explang.IParser;
@@ -34,6 +33,7 @@ public class JlineREPL implements IREPL {
   protected boolean lineMode = false;
   protected Compiler compiler;
   protected IParser parser;
+  protected Terminal term;
 
   @Override
   public void setVerbose(boolean val) {
@@ -85,7 +85,6 @@ public class JlineREPL implements IREPL {
     public ParsedLine parse(final String line, final int cursor, final ParseContext context)
         throws SyntaxError {
       ParseCtx pctx = new ParseCtx("parser");
-      // System.err.println("{c="+cursor+",ctx="+context+"}");
       ASTNList exprs;
       try {
         exprs = compiler.getParser().parse(pctx, line, 1);
@@ -241,11 +240,11 @@ public class JlineREPL implements IREPL {
     ParseCtx pctx = new ParseCtx("INPUT");
     Parser jlparser = new JLineParser();
 
-    Terminal terminal = TerminalBuilder.builder().system(true).build();
+    term = TerminalBuilder.builder().system(true).build();
 
     LineReader reader =
         LineReaderBuilder.builder()
-            .terminal(terminal)
+            .terminal(term)
             // .completer(completer)
             .parser(jlparser)
             /// .variable(LineReader., "%M%P > ")
@@ -257,7 +256,7 @@ public class JlineREPL implements IREPL {
             // .option(LineReader.Option.INSERT_BRACKET, true)
             .option(LineReader.Option.INSERT_TAB, true)
             .build();
-    System.out.print(
+    term.writer().print(
         "Welcome to the EXPLANG JLine REPL!\n"
             + "Active parser is "
             + parser.getClass().getSimpleName()
@@ -279,66 +278,57 @@ public class JlineREPL implements IREPL {
             continue;
           }
         } catch (org.jline.reader.EndOfFileException eofex) {
-          terminal.writer().println(Utils.asString("EOF"));
+          term.writer().println(Utils.asString("EOF"));
           break;
         }
         ASTNList exprs = parser.parse(pctx, line, 1);
+        if (exprs.hasProblems()) {
+          term.writer().println("Failed to parse expression:");
+          term.writer().print(Utils.listParseErrors(exprs));
+          continue;
+        }
         if (exprs.size() == 0) {
           continue;
         }
         for (ASTN exprASTN : exprs) {
           if (verbose) {
-            System.err.println("\nAST:\n" + exprASTN + "\n------\n");
+            term.writer().println("\nAST:\n" + exprASTN + "\n------\n");
           }
           if (exprASTN.hasProblems()) {
-            System.out.println("Failed to parse expression:");
-            System.out.print(listParseErrors(exprASTN));
+            term.writer().println("Failed to parse expression:");
+            term.writer().print(Utils.listParseErrors(exprASTN));
             break;
           }
           ICompiled expr = compiler.compile(exprASTN);
           if (verbose) {
-            System.err.println("compiled:\n" + expr + "\n------\n");
+            term.writer().println("compiled:\n" + expr + "\n------\n");
           }
           result = expr.evaluate(bt, ctx);
           if (verbose) {
-            System.err.println("evaluation result:\n");
+            term.writer().println("evaluation result:\n");
           }
-          terminal.writer().println(writer.writeObject(result));
+          term.writer().print(";;=> ");
+          term.writer().println(writer.writeObject(result));
         }
       } catch (CompilationException ex) {
-        System.err.println("COMPILATION ERROR: " + ex.getMessage());
+        term.writer().println("COMPILATION ERROR: " + ex.getMessage());
       } catch (ExecutionException ex) {
-        System.err.print("EXECUTION ERROR: " + ex.getMessage());
+        term.writer().print("EXECUTION ERROR: " + ex.getMessage());
         if (null != ex.getBacktrace()) {
-          System.err.println(" at:\n" + ex.getBacktrace());
+          term.writer().println(" at:\n" + ex.getBacktrace());
         } else {
-          System.err.println();
+          term.writer().println();
         }
       } catch (RuntimeException ex) {
-        System.err.println("RUNTIME EXCEPTION: " + ex);
+        term.writer().println("RUNTIME EXCEPTION: " + ex);
       } catch (Exception ex) {
-        System.err.println("EXCEPTION: " + ex);
+        term.writer().println("EXCEPTION: " + ex);
       } catch (Throwable e) {
-        e.printStackTrace();
-      }
+        term.writer().println("UNEXPECTED ERROR: "+e);
+      }        
     }
     return result;
   }
 
-  private String listParseErrors(ASTN exprASTN) {
-    final StringBuilder buf = new StringBuilder();
-    ASTN.Walker errCollector =
-        new ASTN.Walker() {
-          public void walk(ASTN node) {
-            final Exception ex = node.getProblem();
-            if (null != ex) {
-              buf.append(node.getPctx());
-              buf.append(": ");
-              buf.append(ex.getMessage()).append("\n");
-            }
-          }
-        };
-    exprASTN.dispatchWalker(errCollector);
-    return buf.toString();
-  }
+
 }

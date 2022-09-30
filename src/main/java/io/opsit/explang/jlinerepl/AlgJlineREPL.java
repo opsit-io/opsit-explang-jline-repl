@@ -7,7 +7,6 @@ import io.opsit.explang.ASTNList;
 import io.opsit.explang.Backtrace;
 import io.opsit.explang.CompilationException;
 import io.opsit.explang.Compiler;
-import io.opsit.explang.Compiler.ICtx;
 import io.opsit.explang.ExecutionException;
 import io.opsit.explang.ICompiled;
 import io.opsit.explang.IObjectWriter;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -41,7 +39,8 @@ public class AlgJlineREPL implements IREPL {
   protected boolean lineMode = false;
   protected Compiler compiler;
   protected IParser parser;
-
+  protected Terminal term;
+  
   Compiler.ICtx replCtx;
 
   public Compiler getCompiler() {
@@ -178,14 +177,14 @@ public class AlgJlineREPL implements IREPL {
 
   private void debug(String... strs) {
     if (verbose) {
-      System.err.print("debug: ");
+      term.writer().print("debug: ");
       for (int i = 0; i < strs.length; i++) {
         if (i > 0) {
-          System.err.print(", ");
+          term.writer().print(", ");
         }
-        System.err.print(strs[i]);
+        term.writer().print(strs[i]);
       }
-      System.err.println();
+      term.writer().println();
     }
   }
 
@@ -230,8 +229,8 @@ public class AlgJlineREPL implements IREPL {
     compiler.setParser(parser);
     ParseCtx pctx = new ParseCtx("INPUT");
     Parser jlparser = new JLineParser();
-
-    Terminal terminal = TerminalBuilder.builder().system(true).nativeSignals(true).build();
+    term = TerminalBuilder.builder().system(true).nativeSignals(true).build();
+    
 
     Completer completer = null;
     if (parser instanceof IAutoSuggester) {
@@ -240,7 +239,7 @@ public class AlgJlineREPL implements IREPL {
 
     LineReader reader =
         LineReaderBuilder.builder()
-            .terminal(terminal)
+            .terminal(term)
             .completer(completer)
             .parser(jlparser)
             /// .variable(LineReader., "%M%P > ")
@@ -268,7 +267,7 @@ public class AlgJlineREPL implements IREPL {
 
     // NonBlockingReader reader = terminal.reader();
     Backtrace bt = compiler.newBacktrace();
-    System.out.print(""
+    term.writer().println(""
             + "Welcome to the EXPLANG JLine REPL!\n"
             + "Active parser is "
             + parser.getClass().getSimpleName()
@@ -290,16 +289,19 @@ public class AlgJlineREPL implements IREPL {
             continue;
           }
         } catch (org.jline.reader.EndOfFileException eofex) {
-          terminal.writer().println(Utils.asString("EOF"));
+          term.writer().println(Utils.asString("EOF"));
           break;
         }
         ASTNList exprs = parser.parse(pctx, line, 1);
-        if (exprs.size() == 0) {
+        if (exprs.hasProblems()) {
+          term.writer().println("Failed to parse expression:");
+          term.writer().println(Utils.listParseErrors(exprs));
+          if (verbose) {
+            debug("\nAST:\n" + exprs + "\n------\n");
+          }
           continue;
         }
-        if (exprs.hasProblems()) {
-          System.out.println("Failed to parse expression:");
-          System.out.print(listParseErrors(exprs));
+        if (exprs.size() == 0) {
           continue;
         }
         for (ASTN exprASTN : exprs) {
@@ -307,8 +309,8 @@ public class AlgJlineREPL implements IREPL {
             debug("\nAST:\n" + exprASTN + "\n------\n");
           }
           if (exprASTN.hasProblems()) {
-            System.out.println("Failed to parse expression:");
-            System.out.print(listParseErrors(exprASTN));
+            term.writer().println("Failed to parse expression:");
+            term.writer().println(Utils.listParseErrors(exprASTN));
             break;
           }
           if (null == exprASTN) {
@@ -323,33 +325,33 @@ public class AlgJlineREPL implements IREPL {
           if (verbose) {
             debug("evaluation result:\n");
           }
-          terminal.writer().print("##=> ");
-          terminal.writer().println(writer.writeObject(result));
+          term.writer().print("##=> ");
+          term.writer().println(writer.writeObject(result));
           // kluge on
-          if (result instanceof Map) {
-            ICtx newCtx = (ICtx) ((Map) result).get("__NEW_CONTEXT__");
-            if (null != newCtx) {
-              System.err.println("\nreplacing REPL context!");
-              replCtx = newCtx;
-            }
-          }
+          //if (result instanceof Map) {
+          //  ICtx newCtx = (ICtx) ((Map) result).get("__NEW_CONTEXT__");
+          //  if (null != newCtx) {
+          //    System.err.println("\nreplacing REPL context!");
+          //    replCtx = newCtx;
+          //  }
+          // }
           // kluge off
         }
       } catch (CompilationException ex) {
-        System.err.println("COMPILATION ERROR: " + ex.getMessage());
+        term.writer().println("COMPILATION ERROR: " + ex.getMessage());
       } catch (ExecutionException ex) {
-        System.err.print("EXECUTION ERROR: " + ex.getMessage());
+        term.writer().println("EXECUTION ERROR: " + ex.getMessage());
         if (null != ex.getBacktrace()) {
-          System.err.println(" at:\n" + ex.getBacktrace());
+          term.writer().println(" at:\n" + ex.getBacktrace());
         } else {
-          System.err.println();
+          term.writer().println();
         }
       } catch (RuntimeException ex) {
-        System.err.println("RUNTIME EXCEPTION: " + ex);
+        term.writer().println("RUNTIME EXCEPTION: " + ex);
       } catch (Exception ex) {
-        System.err.println("EXCEPTION: " + ex);
+        term.writer().println("EXCEPTION: " + ex);
       } catch (Throwable e) {
-        e.printStackTrace();
+        term.writer().println("UNEXPECTED ERROR: "+e);
       }
     }
     return result;
@@ -428,22 +430,5 @@ public class AlgJlineREPL implements IREPL {
   @Override
   public IParser getParser() {
     return this.parser;
-  }
-
-  private String listParseErrors(ASTN exprASTN) {
-    final StringBuilder buf = new StringBuilder();
-    ASTN.Walker errCollector =
-        new ASTN.Walker() {
-          public void walk(ASTN node) {
-            final Exception ex = node.getProblem();
-            if (null != ex) {
-              buf.append(node.getPctx());
-              buf.append(": ");
-              buf.append(ex.getMessage()).append("\n");
-            }
-          }
-        };
-    exprASTN.dispatchWalker(errCollector);
-    return buf.toString();
   }
 }
