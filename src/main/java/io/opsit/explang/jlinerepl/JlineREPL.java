@@ -324,7 +324,7 @@ public class JlineREPL implements IREPL {
       } catch (Exception ex) {
         term.writer().println("EXCEPTION: " + ex);
       } catch (Throwable e) {
-        term.writer().println("UNEXPECTED ERROR: "+e);
+        term.writer().println("UNEXPECTED ERROR: " + e);
       }        
     }
     return result;

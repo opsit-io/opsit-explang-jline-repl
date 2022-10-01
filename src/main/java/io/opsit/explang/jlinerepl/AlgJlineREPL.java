@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
+import org.jline.reader.EOFError;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.ParsedLine;
@@ -32,8 +33,7 @@ import org.jline.reader.Parser;
 import org.jline.reader.SyntaxError;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.reader.EOFError;
-
+ 
 public class AlgJlineREPL implements IREPL {
   protected boolean verbose = false;
   protected boolean lineMode = false;
@@ -57,7 +57,7 @@ public class AlgJlineREPL implements IREPL {
 
 
   private static int nwsidx(String s, int start) {
-    for (int i = start +1; i < s.length(); i++) {
+    for (int i = start + 1; i < s.length(); i++) {
       char c = s.charAt(i);
       if (!Character.isWhitespace(c)) {
         return i;
@@ -69,7 +69,7 @@ public class AlgJlineREPL implements IREPL {
   private static int llidx(String s, int idx) {
     final int length = s.length();
     for (int i = idx; i >= 0; i--) {
-      if (i<  length && '\n' == s.charAt(i)) {
+      if (i <  length && '\n' == s.charAt(i)) {
         return idx - i;
       }
     }
@@ -82,17 +82,17 @@ public class AlgJlineREPL implements IREPL {
     // FIXME: not very robust or smart,
     //        does not take in account braces inside literals
     //        should take in account structural operators like if
-    int nlidx = s.lastIndexOf("\n")+1;
+    int nlidx = s.lastIndexOf("\n") + 1;
     // operate on the last string only
     //s = s.substring(nlidx);
     int pos = s.length() - 1;
     List<Character> stack = new ArrayList<Character>();
     for (int i = pos; i >= 0; i--) {
       char c = s.charAt(i);
-      if (c == ')' || c==']' || c=='}') {
+      if (c == ')' || c == ']' || c == '}') {
         stack.add(c);
       }
-      if (c == '(' || c=='[' || c == '{') {
+      if (c == '(' || c == '[' || c == '{') {
         // stop on first unmatched paren
         if (stack.isEmpty()) {
           ncb[0] = c == '(' ? ")" : (c == '[' ? "]" : (c == '{' ? "}" : null));
@@ -104,7 +104,7 @@ public class AlgJlineREPL implements IREPL {
         if (! ((c == '(' && p == ')') 
                || (c == '[' && p == ']') 
                || (c == '{' && p == '}'))) {
-          ncb[0] = ""+p;
+          ncb[0] = "" + p;
           return llidx(s, nwsidx(s, i));
         }
       }
@@ -152,7 +152,12 @@ public class AlgJlineREPL implements IREPL {
         } else {
           // next closing bracket
           String[] ncb = new String[1];
-          throw new EOFError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString(), null, bcount(line,ncb), ncb[0]);
+          throw new EOFError(pctx.getLine(),
+                             pctx.getPos(),
+                             exprs.getProblem().toString(),
+                             null,
+                             bcount(line,ncb),
+                             ncb[0]);
         }
         //throw new SyntaxError(pctx.getLine(), pctx.getPos(), exprs.getProblem().toString());
       }
@@ -351,7 +356,7 @@ public class AlgJlineREPL implements IREPL {
       } catch (Exception ex) {
         term.writer().println("EXCEPTION: " + ex);
       } catch (Throwable e) {
-        term.writer().println("UNEXPECTED ERROR: "+e);
+        term.writer().println("UNEXPECTED ERROR: " + e);
       }
     }
     return result;
