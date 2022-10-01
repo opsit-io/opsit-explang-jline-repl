@@ -1,11 +1,11 @@
 Explang JLine REPL
 ==================
 
-This project provides REPL for [Explang](https://github.com/opsit/opsit-explang-docs)
+This project provides REPL for *[Explang](https://opsit-io.github.io/opsit-explang-docs/)*
 with command editing and history capabilities.
 
-Warning: This project is pretty much work in progress.  The
-completion/autosuggestion features still are not really usable.
+Warning: This project is pretty much work in progress. 
+The completion/autosuggestion features still are not really usable.
 
 Dependencies
 ------------
@@ -112,8 +112,8 @@ not recommented for use.
 Language Documentation
 ----------------------
 
-See [Explang Language Documentation](https://github.com/opsit/opsit-explang-docs):
-
+- [Explang Documentation Site](https://opsit-io.github.io/opsit-explang-docs/)
+- [Using Explang REPL](https://opsit-io.github.io/opsit-explang-docs/using-explang-REPL/)
 
 Licenses
 --------
