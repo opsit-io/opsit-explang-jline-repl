@@ -25,7 +25,7 @@ Download an Explang Core executable JAR jars from Github
 Or use maven CLI to fetch the artifacts from maven central:
 
 ```
-mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=io.opsit:opsit-explang-jline-repl:0.0.2:jar:runnable   -Dtransitive=false -Ddest=opsit-explang-jline-repl-0.0.2-runnable.jar
+mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=io.opsit:opsit-explang-jline-repl:0.0.4:jar:runnable   -Dtransitive=false -Ddest=opsit-explang-jline-repl-0.0.4-runnable.jar
 ```
 
 Using REPL
@@ -35,7 +35,7 @@ Run the executable jar in a terminal emulator or windows console. The default pa
 [alg-parser](https://github.com/opsit-io/opsit-explang-alg-parser).
 
 ```
-$ java -jar opsit-explang-jline-repl-0.0.2-runnable.jar 
+$ java -jar opsit-explang-jline-repl-0.0.4-runnable.jar 
 Welcome to the EXPLANG REPL!
 Active parser is AlgParser
 Loaded packages are: [base.math, base.text, io, base.bindings, ffi, base.funcs, loops, threads, base.version, base.coercion, base.logic, base.lang, base.arithmetics, base.seq, base.control, base.regex, dwim, base.docs, base.beans, base.types]
