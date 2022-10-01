@@ -1,7 +1,8 @@
 Explang JLine REPL
 ==================
 
-This project provides REPL with editing and history features
+This project provides REPL for [Explang](https://github.com/opsit/opsit-explang-docs)
+with command editing and history capabilities.
 
 Warning: This project is pretty much work in progress.  The
 completion/autosuggestion features still are not really usable.
@@ -18,7 +19,7 @@ This plugin depends on
 Installation
 ------------
 
-Download an Explang Core executable JAR jars from Github 
+Download the Explang JLINE REPL executable JAR jars from Github 
 [releases](https://github.com/opsit-io/opsit-explang-jline-repl/releases)
 
 
@@ -31,21 +32,33 @@ mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=io.opsit
 Using REPL
 ----------
 
-Run the executable jar in a terminal emulator or windows console. The default parser is 
-[alg-parser](https://github.com/opsit-io/opsit-explang-alg-parser).
+Run the executable jar in a terminal emulator or windows console.. 
+
+On windows it seems to work better with [mintty](https://mintty.github.io/).
+than on windows console.
+
+The default parser is [alg-parser](https://github.com/opsit-io/opsit-explang-alg-parser),
+Use the `-r` option to switch parsers.
 
 ```
 $ java -jar opsit-explang-jline-repl-0.0.4-runnable.jar 
-Welcome to the EXPLANG REPL!
+Welcome to the EXPLANG JLine REPL!
 Active parser is AlgParser
-Loaded packages are: [base.math, base.text, io, base.bindings, ffi, base.funcs, loops, threads, base.version, base.coercion, base.logic, base.lang, base.arithmetics, base.seq, base.control, base.regex, dwim, base.docs, base.beans, base.types]
-Please type an EXPLANG expression terminated by an extra NEWLINE
-[0]>  print("Hello, world!\n");
-Hello, world!
+Loaded packages are: [base.math, base.text, io, base.bindings, ffi, base.funcs, loops, runtime, threads, base.version, base.coercion, base.logic, base.lang, base.arithmetics, base.seq, base.control, base.regex, dwim, base.docs, base.beans, base.types]
+Writer is io.opsit.explang.jlinerepl.AlgJlineREPL$1@e720b71
+Please type an EXPLANG expressions. 
+  Press <Enter> on empty line to submit.
+  Press <Ctrl-C> to cancel input.
 
-=> Hello, world!
-
-[1]>
+[0]> println("Hello, world");
+Hello, world
+##=> Hello, world
+[1]> data:= {
+             "foo" : "bar",
+             "number" : 1
+           };
+##=> {number=1, foo=bar}
+[2]>
 ```
 
 ### REPL Command Line Arguments 
@@ -100,9 +113,6 @@ Language Documentation
 ----------------------
 
 See [Explang Language Documentation](https://github.com/opsit/opsit-explang-docs):
-
-- [Language Overview](TBD)
-- [REPL Reference](TBD)
 
 
 Licenses
