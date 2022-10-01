@@ -51,6 +51,16 @@
       <version>3.21.0</version>
     </dependency>
     <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-terminal-jna</artifactId>
+      <version>3.21.0</version>
+    </dependency>
+    <!--dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-terminal-jansi</artifactId>
+      <version>3.21.0</version>
+    </dependency-->
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
