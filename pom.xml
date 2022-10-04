@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opsit</groupId>
   <artifactId>opsit-explang-jline-repl</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.5</version>
 
   <name>Opsit Explang JLine REPL</name>
   <description>JLine base REPL for Explang</description>
@@ -43,7 +43,7 @@
     <dependency>
 	  <groupId>io.opsit</groupId>
 	  <artifactId>opsit-explang-alg-parser</artifactId>
-	  <version>0.0.5-SNAPSHOT</version>
+	  <version>0.0.5</version>
     </dependency>
     <dependency>
       <groupId>org.jline</groupId>
