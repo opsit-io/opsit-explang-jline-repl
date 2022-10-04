@@ -31,6 +31,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
 import org.jline.reader.SyntaxError;
+import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
  
@@ -40,6 +41,7 @@ public class AlgJlineREPL implements IREPL {
   protected Compiler compiler;
   protected IParser parser;
   protected Terminal term;
+  protected volatile boolean shutdown = false;
   
   Compiler.ICtx replCtx;
 
@@ -228,6 +230,7 @@ public class AlgJlineREPL implements IREPL {
 
   @Override
   public Object execute(Reader inReader, String inputName) throws IOException {
+    this.shutdown = false;
     System.setProperty(LineReader.PROP_SUPPORT_PARSEDLINE, "true");
     Object result = null;
     replCtx = compiler.newCtx();
@@ -351,6 +354,14 @@ public class AlgJlineREPL implements IREPL {
         } else {
           term.writer().println();
         }
+      } catch (UserInterruptException ex) {
+        if (shutdown) {
+          term.writer().println("REPL EXIT REQUESTED");
+          term.writer().flush();
+          break;
+        } else {
+          term.writer().println("USER INTERRUPT");
+        }
       } catch (RuntimeException ex) {
         term.writer().println("RUNTIME EXCEPTION: " + ex);
       } catch (Exception ex) {
@@ -358,6 +369,11 @@ public class AlgJlineREPL implements IREPL {
       } catch (Throwable e) {
         term.writer().println("UNEXPECTED ERROR: " + e);
       }
+    }
+    try {
+      term.close();
+    } catch (Exception ex) {
+      System.err.println("Unexpected exception closing terminal: "+ex.getMessage());
     }
     return result;
   }
@@ -435,5 +451,15 @@ public class AlgJlineREPL implements IREPL {
   @Override
   public IParser getParser() {
     return this.parser;
+  }
+
+  @Override
+  public void requestExit() {
+    this.shutdown = true;
+  }
+
+  @Override
+  public boolean isExitRequested() {
+    return this.shutdown;
   }
 }
