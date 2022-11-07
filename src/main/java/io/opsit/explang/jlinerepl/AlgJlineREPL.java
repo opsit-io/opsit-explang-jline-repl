@@ -373,7 +373,7 @@ public class AlgJlineREPL implements IREPL {
     try {
       term.close();
     } catch (Exception ex) {
-      System.err.println("Unexpected exception closing terminal: "+ex.getMessage());
+      System.err.println("Unexpected exception closing terminal: " + ex.getMessage());
     }
     return result;
   }
